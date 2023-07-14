@@ -1,28 +1,25 @@
 const fileInput = document.querySelector('#file-input');
-const previewBox = document.querySelector('#preview');
+const previewBox = document.querySelector('#preview-box');
 
 fileInput.addEventListener('change', event => {
   const file = event.target.files[0];
   const reader = new FileReader();
   
   reader.onload = () => {
-    const fileType = file.type.split('/')[0]; // Obtiene el tipo de archivo (imagen, audio, video)
-    
-    previewBox.innerHTML = ''; // Limpia cualquier vista previa anterior
+    //Obtain file type and clean earlier previews
+    const fileType = file.type.split('/')[0];
+    const allowedMIMEType = ['image', 'video', 'audio'];
+    previewBox.innerHTML = '';
 
-    let previewType;
-    if (fileType === 'image') {
-      previewType = document.createElement('img');
-    } else if (fileType === 'audio') {
-      previewType = document.createElement('audio');
-    } else if (fileType === 'video') {
-      previewType = document.createElement('video');
-    } else {
-      return; // Si el tipo de archivo no es compatible, no muestra ninguna vista previa
-    }
-    previewType.src = reader.result;
-    previewType.controls = true;
-    previewBox.appendChild(previewType);
+    //Verify if fileType is valid. Create and attach the HTML element
+    if (!allowedMIMEType.includes(fileType))
+     return
+    let type = fileType;
+    if (fileType == 'image') type = 'img'
+    const preview = document.createElement(type)
+    preview.src = reader.result;
+    preview.controls = true;
+    previewBox.appendChild(preview);
   };
   reader.readAsDataURL(file);
 });
