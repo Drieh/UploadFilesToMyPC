@@ -1,0 +1,30 @@
+.dy-inline_block {
+    display: inline-block;
+}
+.dy-block {
+    display: block;
+}
+.bcg_col-green {
+    background-color: greenyellow;
+}
+.bcg_col-red {
+    background-color: brown;
+}
+
+
+body {
+    background-color: rgb(200, 210, 255);
+}
+#title {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 80px;
+}
+#preview > * {
+    max-width: 50%;
+    max-height: 50%;
+}
+#upload-form {
+    font-size: 32px;
+    height: 100px;
+    display: flex;
+}
