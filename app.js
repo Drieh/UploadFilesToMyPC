@@ -2,19 +2,12 @@ import { unlink, renameSync, readFile, readFileSync, writeFile } from 'fs';
 import express from 'express';
 import multer from 'multer';
 import { extname, join } from 'path';
-
-/*
-Required .config file. Is a json structured file with environment data, this file must include:
-
-  - UploadFolderPath: Where uploaded data will be managed
-  - ListenPort: The port on which the application will be hosted
-*/
-const config = JSON.parse(
-  readFileSync('./data/.config', 'utf-8'))
+import dotenv from 'dotenv'
+dotenv.config()
 
 const logFilePath = './data/log.txt'
 const app = express();
-const upload = multer({ dest: config['UploadFolderPath'] });
+const upload = multer({ dest: process.env.UPLOAD_FOLDER_PATH });
 
 app.use(express.static('public'));
 app.post('/upload', upload.single('file'), (req, res) => {
@@ -34,13 +27,13 @@ app.post('/upload', upload.single('file'), (req, res) => {
   //Make a log with state 0 (Saved) and send a OK (200) response to the client.
   const extension = extname(req.file.originalname);
   const newName = req.file.filename + extension;
-  renameSync(req.file.path, join(config['UploadFolderPath'], newName));
+  renameSync(req.file.path, join(process.env.UPLOAD_FOLDER_PATH, newName));
   res.send({ state: 200, msg: 'Archivo recibido' });
   logToServer(req, 0)
 });
 
-app.listen(config['ListenPort'], () => {
-  console.log(`Servidor iniciado en http://localhost:${config['ListenPort']}\n`);
+app.listen(process.env.PORT, () => {
+  console.log(`Servidor iniciado en http://localhost:${process.env.PORT}\n`);
 });
 function logToServer(req, state) {
   const file = req.file;
