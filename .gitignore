@@ -1,2 +1,3 @@
-data/.config
 data/log.txt
+node_modules
+.env

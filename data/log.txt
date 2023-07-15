@@ -1,2 +1,0 @@
-> 13/07/2023 - 18:47:55 | Saved | ::1 |image/x-icon 011325ad3a6112aae628985550b31d29 | icon.ico
-> 13/07/2023 - 4:29:45 | Deleted | ::1 |application/octet-stream 99874ebdbd6e96bfde650617f4c099f8 | ebbfacd7021271bd8df8d3a8cbc6684f
