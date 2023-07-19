@@ -1,70 +1,35 @@
-import { unlink, renameSync, readFile, readFileSync, writeFile } from 'fs';
 import express from 'express';
 import multer from 'multer';
-import { extname, join } from 'path';
-import dotenv from 'dotenv'
-dotenv.config()
+import * as fc from './file-control.js';
 
-const logFilePath = './data/log.txt'
+fc.verifyDotEnv();
+
 const app = express();
 const upload = multer({ dest: process.env.UPLOAD_FOLDER_PATH });
 
 app.use(express.static('public'));
 app.post('/upload', upload.single('file'), (req, res) => {
-  let allowedMIMEType = ['image', 'video', 'audio']
+  const allowedMIMEType = ['image', 'video', 'audio', 'text'];
+  const file = req.file;
 
   //Verify if there is a file or if it's type is allowed. Non-allowed files types will be deleted.
   //Make a log (state 1 or 2, Deleted or Failed Delete) and send a Bad Request (400) response to the client.
-  if (!req.file) return res.send({ state: 400, msg: 'Ingresa un archivo primero' });
+  if (!file) return res.send({ state: 400, msg: 'Ingresa un archivo primero' });
+
   if (!allowedMIMEType.includes(req.file.mimetype.split('/')[0])) {
-    unlink(req.file.path, (err) => {
-      if (err) logToServer(req, 2);
-      else logToServer(req, 1);
-    });
+    fc.newLog(req,
+      fc.deleteFile(file.path)
+    )
     return res.send({ state: 400, msg: 'Tipo de archivo inválido' });
   }
+
   //Rename the file to include the original extension.
   //Make a log with state 0 (Saved) and send a OK (200) response to the client.
-  const extension = extname(req.file.originalname);
-  const newName = req.file.filename + extension;
-  renameSync(req.file.path, join(process.env.UPLOAD_FOLDER_PATH, newName));
+  fc.addExtension(file);
+  fc.newLog(req, 0);
   res.send({ state: 200, msg: 'Archivo recibido' });
-  logToServer(req, 0)
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Servidor iniciado en http://localhost:${process.env.PORT}\n`);
+app.listen(process.env.MAIN_PORT, () => {
+  console.log(`Servidor iniciado en http://localhost:${process.env.MAIN_PORT}\n`);
 });
-function logToServer(req, state) {
-  const file = req.file;
-  let fileState;
-  let date = new Date();
-  let newLog = `>`;
-
-  if (state == 0) fileState = `Saved`;
-  if (state == 1) fileState = `Deleted`;
-  if (state == 2) fileState = `Failed Delete`;
-
-  newLog = newLog
-    .concat(` ${date.toLocaleDateString().replace(/-/g, '/')} - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} |`)
-    .concat(` ${fileState} | `)
-    .concat(` ${req.ip} |`)
-    .concat(`${file.mimetype} ${file.filename} |`)
-    .concat(` ${file.originalname}\n`);
-
-  readFile(logFilePath, 'utf8', (error, oldLog) => {
-    if (error) {
-      console.error('Failed to read log:', error);
-      return;
-    }
-    const log = newLog + oldLog;
-
-    writeFile(logFilePath, log, (error) => {
-      if (error) {
-        console.error('Failed to write log:', error);
-      } else {
-        console.log('Log Success!');
-      }
-    });
-  });
-}
